@@ -1,12 +1,14 @@
 #1 create a filter that change the intake voice
 #2 ADD GUI
 #3 Store sound into an audio file
+#4 add normal voice & robot voice option
 
 import pyaudio
 import struct
 import math
 import wave
 import tkinter as Tk
+import numpy as np
 # from scipy.signal import spectrogram, windows
 
 def clip16( x ):    
@@ -40,7 +42,6 @@ wf.setframerate(RATE)	            # samples per second
 # Define TKinter root
 root = Tk.Tk()
 
-# demo_5
 # order = 7
 # [b_lpf, a_lpf] = signal.ellip(order, 0.2, 50, 0.48)
 # I = 1j
@@ -55,8 +56,18 @@ root = Tk.Tk()
 # Define widgets
 B_quit = Tk.Button(root, text = 'Quit', command = fun_quit)
 
+L_label = Tk.Label(root, text = 'Voice_Option')
+
+option = Tk.IntVar()
+R_func = Tk.Radiobutton(root, text="Robot_Voice", value="1", var=option)
+R_func2 = Tk.Radiobutton(root, text="Normal_Voice", value="2", var=option)
+
 # Place widgets
-B_quit.pack(side = Tk.BOTTOM, fill = Tk.X)
+# Pack will use in this case
+B_quit.pack(side = Tk.BOTTOM, fill = Tk.X, padx = 50)
+L_label.pack(padx = 5)
+R_func.pack(padx = 5)
+R_func2.pack(padx = 5)
 
 p = pyaudio.PyAudio()
 stream = p.open(
@@ -78,17 +89,23 @@ while CONTINUE:
     input_bytes = stream.read(BLOCKLEN, exception_on_overflow = False)   
     input_tuple = struct.unpack('h' * BLOCKLEN, input_bytes)
     
-    om = 2*math.pi*f0/RATE
+    #Robot Voice
+    if option.get() == 1:
+        om = 2*math.pi*f0/RATE
+        for n in range(0, BLOCKLEN):
+            theta = theta + om
+            output_block[n] = int(input_tuple[n] * math.cos(theta))
+            output_block[n] = clip16(int(output_block[n] * 0.5))
 
-    for n in range(0, BLOCKLEN):
-        
-        theta = theta + om
-        output_block[n] = int(input_tuple[n] * math.cos(theta))
-        output_block[n] = clip16(int(output_block[n] * 0.5))
+        # keep theta betwen -pi and pi
+        while theta > math.pi:
+            theta = theta - 2*math.pi
 
-    # keep theta betwen -pi and pi
-    while theta > math.pi:
-        theta = theta - 2*math.pi
+    #Normal Voice
+    if option.get() == 2:
+        x = np.fft.rfft(input_tuple)
+        output_block = np.fft.irfft(x)
+        output_block = output_block.astype(int)
 
     # Convert values to binary data
     output_bytes = struct.pack('h' * BLOCKLEN, *output_block)

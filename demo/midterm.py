@@ -49,7 +49,6 @@ option = Tk.IntVar()
 R_func = Tk.Radiobutton(root, text="Option1", value="1", var=option)
 R_func2 = Tk.Radiobutton(root, text="Option2", value="2", var=option)
 
-
 # Place widgets
 B_quit.pack(side = Tk.BOTTOM, fill = Tk.X)
 S_freq.pack(side = Tk.LEFT)
