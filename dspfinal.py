@@ -1,9 +1,11 @@
 #1 create a filter that change the intake voice
 #2 ADD GUI
+#3 Store sound into an audio file
 
 import pyaudio
 import struct
 import math
+import wave
 import tkinter as Tk
 # from scipy.signal import spectrogram, windows
 
@@ -15,7 +17,7 @@ def clip16( x ):
         x = -32768
     else:
         x = x        
-    return (x)
+    return (x) 
 
 def fun_quit():
   global CONTINUE
@@ -28,6 +30,12 @@ BLOCKLEN = 64      # Number of frames per block
 WIDTH = 2           # Number of bytes per signal value
 CHANNELS = 1        # mono
 RATE = 32000        # Frame rate (frames/second)
+
+# Copy of the sound file will be store
+wf = wave.open('dsp.wav', 'w')		# wf : wave file
+wf.setnchannels(1)			        # one channel (mono)
+wf.setsampwidth(2)			
+wf.setframerate(RATE)	            # samples per second
 
 # Define TKinter root
 root = Tk.Tk()
@@ -87,9 +95,12 @@ while CONTINUE:
 
     # Write binary data to audio output stream
     stream.write(output_bytes)
+    # Write binary data to audio file
+    wf.writeframesraw(output_bytes)
 
 print('* Finished')
 
 stream.stop_stream()
 stream.close()
+wf.close()
 p.terminate()
