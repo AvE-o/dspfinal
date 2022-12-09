@@ -2,6 +2,7 @@
 #2 ADD GUI
 #3 Store sound into an audio file
 #4 add normal voice & robot voice option
+#5 Frequency slider
 
 import pyaudio
 import struct
@@ -26,12 +27,12 @@ def fun_quit():
   print('Good bye')
   CONTINUE = False
 
-f0 = 400    # Modulation frequency (Hz)
-
 BLOCKLEN = 64      # Number of frames per block
 WIDTH = 2           # Number of bytes per signal value
 CHANNELS = 1        # mono
 RATE = 32000        # Frame rate (frames/second)
+
+# f0 = 400    # Modulation frequency (Hz)
 
 # Copy of the sound file will be store
 wf = wave.open('dsp.wav', 'w')		# wf : wave file
@@ -41,6 +42,9 @@ wf.setframerate(RATE)	            # samples per second
 
 # Define TKinter root
 root = Tk.Tk()
+
+# Define Tk variables
+freq = Tk.DoubleVar()
 
 # order = 7
 # [b_lpf, a_lpf] = signal.ellip(order, 0.2, 50, 0.48)
@@ -54,6 +58,8 @@ root = Tk.Tk()
     # a[i] = a_lpf[i] * s[i]
 
 # Define widgets
+S_freq = Tk.Scale(root, label = 'Frequency', variable = freq, from_ = 100, to = 600, tickinterval = 50)
+
 B_quit = Tk.Button(root, text = 'Quit', command = fun_quit)
 
 L_label = Tk.Label(root, text = 'Voice_Option')
@@ -64,6 +70,7 @@ R_func2 = Tk.Radiobutton(root, text="Normal_Voice", value="2", var=option)
 
 # Place widgets
 # Pack will use in this case
+S_freq.pack(side = Tk.LEFT)
 B_quit.pack(side = Tk.BOTTOM, fill = Tk.X, padx = 50)
 L_label.pack(padx = 5)
 R_func.pack(padx = 5)
@@ -89,9 +96,10 @@ while CONTINUE:
     input_bytes = stream.read(BLOCKLEN, exception_on_overflow = False)   
     input_tuple = struct.unpack('h' * BLOCKLEN, input_bytes)
     
+    
     #Robot Voice
     if option.get() == 1:
-        om = 2*math.pi*f0/RATE
+        om = 2*math.pi*freq.get()/RATE
         for n in range(0, BLOCKLEN):
             theta = theta + om
             output_block[n] = int(input_tuple[n] * math.cos(theta))
