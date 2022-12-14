@@ -10,6 +10,9 @@ import math
 import wave
 import tkinter as Tk
 import numpy as np
+import playsound
+import speech_recognition
+from gtts import gTTS
 # from scipy.signal import spectrogram, windows
 
 def clip16( x ):    
@@ -25,7 +28,15 @@ def clip16( x ):
 def fun_quit():
   global CONTINUE
   print('Good bye')
-  CONTINUE = False
+  CONTINUE = False   
+
+welcome = 0
+# Welcome sound
+def speak(text):
+    tts = gTTS(text=text, lang="en")
+    filename = "voice.mp3"
+    tts.save(filename)
+    playsound.playsound(filename)
 
 BLOCKLEN = 64      # Number of frames per block
 WIDTH = 2           # Number of bytes per signal value
@@ -90,15 +101,19 @@ output_block = BLOCKLEN * [0]
 theta = 0
 CONTINUE = True
 
+
 while CONTINUE:
     root.update()
-    
+
     input_bytes = stream.read(BLOCKLEN, exception_on_overflow = False)   
     input_tuple = struct.unpack('h' * BLOCKLEN, input_bytes)
-    
-    
+
     #Robot Voice
     if option.get() == 1:
+        if welcome == 0:
+            speak("Robot Mode activate")
+            welcome += 1
+        
         om = 2*math.pi*freq.get()/RATE
         for n in range(0, BLOCKLEN):
             theta = theta + om
@@ -122,6 +137,7 @@ while CONTINUE:
     stream.write(output_bytes)
     # Write binary data to audio file
     wf.writeframesraw(output_bytes)
+
 
 print('* Finished')
 
