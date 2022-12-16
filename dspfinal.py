@@ -38,6 +38,8 @@ def speak(text):
     tts.save(filename)
     playsound.playsound(filename)
 
+robot = 0
+
 BLOCKLEN = 64      # Number of frames per block
 WIDTH = 2           # Number of bytes per signal value
 CHANNELS = 1        # mono
@@ -110,6 +112,7 @@ while CONTINUE:
 
     #Robot Voice
     if option.get() == 1:
+        robot = 1
         if welcome == 0:
             speak("Robot Mode activate")
             welcome += 1
@@ -126,6 +129,7 @@ while CONTINUE:
 
     #Normal Voice
     if option.get() == 2:
+        robot = 0
         x = np.fft.rfft(input_tuple)
         output_block = np.fft.irfft(x)
         output_block = output_block.astype(int)
@@ -135,6 +139,8 @@ while CONTINUE:
 
     # Write binary data to audio output stream
     stream.write(output_bytes)
+    # if robot == 1:
+        # stream.write(output_bytes)
     # Write binary data to audio file
     wf.writeframesraw(output_bytes)
 
